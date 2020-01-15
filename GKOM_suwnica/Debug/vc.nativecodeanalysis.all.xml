@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?><DEFECTS><DEFECT>
+    <SFA>
+      <FILEPATH>d:\inf\projekty\opengl\gkom_suwnica\gkom_suwnica\gkom_suwnica</FILEPATH>
+      <FILENAME>camera.h</FILENAME>
+      <LINE>47</LINE>
+      <COLUMN>1</COLUMN>
+    </SFA>
+    <DEFECTCODE>26495</DEFECTCODE>
+    <DESCRIPTION>Variable 'Camera::Right' is uninitialized. Always initialize a member variable (type.6).</DESCRIPTION>
+    <FUNCTION>Camera::{ctor}</FUNCTION>
+    <DECORATED>??0Camera@@QAE@U?$vec@$02M$0A@@glm@@0MM@Z</DECORATED>
+    <FUNCLINE>47</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT><DEFECT>
+    <SFA>
+      <FILEPATH>d:\inf\projekty\opengl\gkom_suwnica\gkom_suwnica\gkom_suwnica</FILEPATH>
+      <FILENAME>camera.h</FILENAME>
+      <LINE>56</LINE>
+      <COLUMN>1</COLUMN>
+    </SFA>
+    <DEFECTCODE>26495</DEFECTCODE>
+    <DESCRIPTION>Variable 'Camera::Right' is uninitialized. Always initialize a member variable (type.6).</DESCRIPTION>
+    <FUNCTION>Camera::{ctor}</FUNCTION>
+    <DECORATED>??0Camera@@QAE@MMMMMMMM@Z</DECORATED>
+    <FUNCLINE>56</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT></DEFECTS>
