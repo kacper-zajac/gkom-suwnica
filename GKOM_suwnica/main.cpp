@@ -13,6 +13,7 @@
 #include "renderer.h"
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
+#include "VertexArray.h"
 
 #include <iostream>
 
@@ -135,21 +136,13 @@ int main()
 		glm::vec3(1.5f,  0.2f, -1.5f),
 		glm::vec3(-1.3f,  1.0f, -1.5f)
 	};
-	unsigned int VAO;
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-
+	VertexArray va;
 	VertexBuffer vb(vertices, sizeof(vertices));
 
-	// position attribute	
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	// texture coord attribute
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	
-
+	VertexBufferLayout layout;
+	layout.Push<float>(3);
+	layout.Push<float>(2);
+	va.AddBuffer(vb, layout);
 
 	// load and create a texture 
 	// -------------------------
@@ -245,7 +238,7 @@ int main()
 		ourShader.setMat4("view", view);
 
 		// render boxes
-		glBindVertexArray(VAO);
+		va.Bind();
 		for (unsigned int i = 0; i < 10; i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
@@ -266,7 +259,7 @@ int main()
 
 	// optional: de-allocate all resources once they've outlived their purpose:
 	// ------------------------------------------------------------------------
-	glDeleteVertexArrays(1, &VAO);
+	va.Unbind();
 
 
 	// glfw: terminate, clearing all previously allocated GLFW resources.
