@@ -2,19 +2,19 @@
 #include <GL/glew.h>
 //#include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <SOIL.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "shader.h"
-#include "camera.h"
-#include "renderer.h"
+#include "Shader.h"
+#include "Camera.h"
+#include "Renderer.h"
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
 #include "VertexArray.h"
 #include "Shader.h"
 #include "VertexBufferLayout.h"
+#include "Texture.h"
 
 #include <iostream>
 
@@ -81,9 +81,9 @@ int main()
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
 	float vertices[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f, //bottom left
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f, // bottom right
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f, // top right
 		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -165,64 +165,21 @@ int main()
 	layout.Push<float>(3);
 	layout.Push<float>(2);
 	va.AddBuffer(vb, layout);
-
 	//IndexBuffer ib(indices, 6);
 
-	// load and create a texture 
-	// -------------------------
-	unsigned int texture1, texture2;
-	// texture 1
-	// ---------
-	glGenTextures(1, &texture1);
-	glBindTexture(GL_TEXTURE_2D, texture1);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// load image, create texture and generate mipmaps
-	int width, height, nrChannels;
-	unsigned char *data = SOIL_load_image("pattern.jpeg", &width, &height, 0, SOIL_LOAD_RGB);
-	if (data)
-	{
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	SOIL_free_image_data(data);
-	// texture 2
-	// ---------
-	glGenTextures(1, &texture2);
-	glBindTexture(GL_TEXTURE_2D, texture2);
-	// set the texture wrapping parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	// set texture filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	// load image, create texture and generate mipmaps
-	data = SOIL_load_image("pattern.jpeg", &width, &height, 0, SOIL_LOAD_RGB);
-	if (data)
-	{
-		// note that the awesomeface.png has transparency and thus an alpha channel, so make sure to tell OpenGL the data type is of GL_RGBA
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else
-	{
-		std::cout << "Failed to load texture" << std::endl;
-	}
-	SOIL_free_image_data(data);
+	
 
 	// tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
 	// -------------------------------------------------------------------------------------------
 	Shader ourShader("shaders/first.shader");
 	ourShader.Bind();
 	//ourShader.SetUniform4f("u_color", 0.8f, 0.3f, 0.8f, 1.0f);
+
+	// load and create a texture 
+	// -------------------------
+	Texture texture("textures/pattern.jpeg");
+	texture.Bind(2);
+	ourShader.SetUniform1i("u_Texture", 2);
 
 	va.Unbind();
 	vb.Bind();
@@ -247,12 +204,6 @@ int main()
 		// render
 		// ------
 		renderer.Clear();
-
-		// bind textures on corresponding texture units
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2);
 
 		// activate shader
 		//ourShader.use();
