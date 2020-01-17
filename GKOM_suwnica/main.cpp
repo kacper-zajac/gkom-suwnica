@@ -13,7 +13,8 @@
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
 #include "VertexArray.h"
-#include "shader.h"
+#include "Shader.h"
+#include "VertexBufferLayout.h"
 
 #include <iostream>
 
@@ -122,6 +123,28 @@ int main()
 		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
+
+	unsigned int indices[]
+	{
+		0, 1, 2,
+		2, 3, 0,
+
+		4, 5, 6,
+		6, 7, 4,
+
+		8, 9, 10,
+		10, 11, 8,
+
+		12, 13, 14,
+		14, 15, 12,
+
+		16, 17, 18,
+		18, 19, 16,
+
+		20, 21, 22,
+		22, 23, 20,
+	};
+
 	// world space positions of our cubes
 	glm::vec3 cubePositions[] = {
 		glm::vec3(0.0f,  0.0f,  0.0f),
@@ -142,6 +165,8 @@ int main()
 	layout.Push<float>(3);
 	layout.Push<float>(2);
 	va.AddBuffer(vb, layout);
+
+	//IndexBuffer ib(indices, 6);
 
 	// load and create a texture 
 	// -------------------------
@@ -195,11 +220,16 @@ int main()
 
 	// tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
 	// -------------------------------------------------------------------------------------------
-		Shader ourShader("shaders/first.shader");
+	Shader ourShader("shaders/first.shader");
 	ourShader.Bind();
 	//ourShader.SetUniform4f("u_color", 0.8f, 0.3f, 0.8f, 1.0f);
 
+	va.Unbind();
+	vb.Bind();
+	ourShader.Unbind();
 
+
+	Renderer renderer;
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
@@ -216,8 +246,7 @@ int main()
 
 		// render
 		// ------
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		renderer.Clear();
 
 		// bind textures on corresponding texture units
 		glActiveTexture(GL_TEXTURE0);
@@ -237,7 +266,6 @@ int main()
 		ourShader.setMat4("view", view);
 
 		// render boxes
-		va.Bind();
 		for (unsigned int i = 0; i < 10; i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
@@ -247,7 +275,7 @@ int main()
 			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 			ourShader.setMat4("model", model);
 
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+			renderer.Draw(va, ourShader, 36);
 		}
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)

@@ -1,2 +1,17 @@
-﻿  Shader.cpp
+﻿  IndexBuffer.cpp
+  Shader.cpp
+  VertexArray.cpp
+  VertexBuffer.cpp
+  main.cpp
+d:\inf\projekty\opengl\gkom_suwnica\gkom_suwnica\gkom_suwnica\main.cpp(239): warning C4244: "inicjowanie": konwersja z "double" do "float", możliwa utrata danych
+d:\inf\projekty\opengl\gkom_suwnica\gkom_suwnica\gkom_suwnica\main.cpp(185): warning C4101: "nrChannels": lokalna zmienna, do której nie istnieje odwołanie
+d:\inf\projekty\opengl\gkom_suwnica\gkom_suwnica\gkom_suwnica\main.cpp(331): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
+d:\inf\projekty\opengl\gkom_suwnica\gkom_suwnica\gkom_suwnica\main.cpp(332): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
+d:\inf\projekty\opengl\gkom_suwnica\gkom_suwnica\gkom_suwnica\main.cpp(336): warning C4244: "inicjowanie": konwersja z "double" do "float", możliwa utrata danych
+d:\inf\projekty\opengl\gkom_suwnica\gkom_suwnica\gkom_suwnica\main.cpp(337): warning C4244: "inicjowanie": konwersja z "double" do "float", możliwa utrata danych
+d:\inf\projekty\opengl\gkom_suwnica\gkom_suwnica\gkom_suwnica\main.cpp(339): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
+d:\inf\projekty\opengl\gkom_suwnica\gkom_suwnica\gkom_suwnica\main.cpp(340): warning C4244: "=": konwersja z "double" do "float", możliwa utrata danych
+d:\inf\projekty\opengl\gkom_suwnica\gkom_suwnica\gkom_suwnica\main.cpp(349): warning C4244: "argument": konwersja z "double" do "float", możliwa utrata danych
+  renderer.cpp
+  Generowanie kodu...
   GKOM_suwnica.vcxproj -> D:\inf\projekty\opengl\GKOM_suwnica\GKOM_suwnica\Debug\GKOM_suwnica.exe
