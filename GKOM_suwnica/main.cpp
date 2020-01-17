@@ -4,7 +4,6 @@
 #include <GLFW/glfw3.h>
 #include <SOIL.h>
 
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
@@ -14,6 +13,7 @@
 #include "IndexBuffer.h"
 #include "VertexBuffer.h"
 #include "VertexArray.h"
+#include "shader.h"
 
 #include <iostream>
 
@@ -75,8 +75,7 @@ int main()
 
 	// build and compile our shader zprogram
 	// ------------------------------------
-	Shader ourShader("shader.vs", "shader.fs");
-	//Shader ourShader("D:/inf/projekty/opengl/suwnica/shader.vs", "D:/inf/projekty/opengl/suwnica/shader.fs");
+
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	// ------------------------------------------------------------------
@@ -196,9 +195,9 @@ int main()
 
 	// tell opengl for each sampler to which texture unit it belongs to (only has to be done once)
 	// -------------------------------------------------------------------------------------------
-	ourShader.use();
-	ourShader.setInt("texture1", 0);
-	ourShader.setInt("texture2", 1);
+		Shader ourShader("shaders/first.shader");
+	ourShader.Bind();
+	//ourShader.SetUniform4f("u_color", 0.8f, 0.3f, 0.8f, 1.0f);
 
 
 	// render loop
@@ -227,7 +226,7 @@ int main()
 		glBindTexture(GL_TEXTURE_2D, texture2);
 
 		// activate shader
-		ourShader.use();
+		//ourShader.use();
 
 		// pass projection matrix to shader (note that in this case it could change every frame)
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
