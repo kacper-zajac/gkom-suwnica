@@ -70,8 +70,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>D:\inf\projekty\opengl\GKOM_suwnica\GKOM_suwnica\GKOM_suwnica\include;$(IncludePath)</IncludePath>
-    <LibraryPath>D:\inf\projekty\opengl\GKOM_suwnica\GKOM_suwnica\GKOM_suwnica\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>D:\inf\projekty\opengl\gkom-suwnica\GKOM_suwnica\include;$(IncludePath)</IncludePath>
+    <LibraryPath>D:\inf\projekty\opengl\gkom-suwnica\GKOM_suwnica\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
