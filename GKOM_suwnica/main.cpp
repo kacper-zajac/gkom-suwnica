@@ -15,6 +15,9 @@
 #include "Shader.h"
 #include "VertexBufferLayout.h"
 #include "Texture.h"
+#include "Skybox.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
 
 #include <iostream>
 
@@ -72,15 +75,6 @@ int main()
 	GLenum err = glewInit();
 
 	// configure global opengl state
-	glEnable(GL_DEPTH_TEST);
-
-	// build and compile our shader zprogram
-	// ------------------------------------
-
-
-	// set up vertex data (and buffer(s)) and configure vertex attributes
-	// ------------------------------------------------------------------
-
 
 
 	float vertices[] = {
@@ -128,6 +122,51 @@ int main()
 		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
 	};
 
+	float skyboxVertices[] = {
+		// positions          
+		-1.0f,  1.0f, -1.0f,
+		-1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f, -1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+
+		-1.0f, -1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f,
+		-1.0f, -1.0f,  1.0f,
+
+		-1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f, -1.0f,
+		 1.0f,  1.0f,  1.0f,
+		 1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f,  1.0f,
+		-1.0f,  1.0f, -1.0f,
+
+		-1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f, -1.0f,
+		 1.0f, -1.0f, -1.0f,
+		-1.0f, -1.0f,  1.0f,
+		 1.0f, -1.0f,  1.0f
+	};
+
 
 
 	unsigned int indices[]
@@ -167,9 +206,12 @@ int main()
 
 	glm::vec3 lightPos(-1.3f, 2.0f, 2.0f);
 
-	VertexArray va, vaLight, exampleOne;
+	VertexArray va, vaLight, exampleOne, skyboxVAO;
 	VertexBuffer vb(vertices, sizeof(vertices));
-	VertexBufferLayout layout;
+	VertexBuffer skyboxVB(skyboxVertices, sizeof(skyboxVertices));
+	VertexBufferLayout layout, skyboxLayout;
+	skyboxLayout.Push<float>(3);
+	skyboxVAO.AddBuffer(skyboxVB, skyboxLayout);
 	layout.Push<float>(3);
 	layout.Push<float>(3);
 	layout.Push<float>(2);
@@ -179,25 +221,30 @@ int main()
 	exampleOne.AddBuffer(vb, layout);
 	Shader basicShader("shaders/first.shader");
 	basicShader.Bind();
-	basicShader.SetUniform1i("u_Texture", 0);
+	basicShader.SetUniform1i("u_Texture", 1);
 	
 	exampleOne.Unbind();
 	basicShader.Unbind();
 	Shader lightShader("shaders/texture.shader");
 	lightShader.Bind();
+	lightShader.SetUniform3f("light.direction", 14.0f, -14.0f, 18.0f);
 	lightShader.SetUniform3f("lightPos", lightPos.x, lightPos.y, lightPos.z);
 	lightShader.SetUniform3f("objectColor", 1.0f, 0.5f, 0.31f);
 	lightShader.SetUniform3f("lightColor", 1.0f, 1.0f, 1.0f);
 	lightShader.SetUniform3f("material.ambient", 1.0f, 0.5f, 0.31f);
 	lightShader.SetUniform1f("material.shininess", 32.0f);
+	lightShader.SetUniform3f("light.ambient", 0.2f, 0.2f, 0.2f);
+	lightShader.SetUniform3f("light.diffuse", 0.5f, 0.5f, 0.5f);
+	lightShader.SetUniform3f("light.specular", 1.0f, 1.0f, 1.0f);
+
 	Texture texture("textures/example.png");
 	
 	Texture textureMap("textures/map.png");
 	
-	texture.Bind();
+	texture.Bind(1);
 	textureMap.Bind(2);
 	lightShader.SetUniform1i("material.specular", 2);
-	lightShader.SetUniform1i("material.diffuse", 0);
+	lightShader.SetUniform1i("material.diffuse", 1);
 
 	//texture.Unbind();
 	va.Unbind();
@@ -206,18 +253,33 @@ int main()
 
 	vaLight.AddBuffer(vb, layout);
 	lampShader.Bind();
-
 		
 	vaLight.Unbind();
 	vb.Unbind();
 	lampShader.Unbind();
-	
 
-	Renderer renderer;
+	Renderer renderer;	
+	
+	Skybox skybox;
+	unsigned int x = skybox.loadCubemap();
+	skybox.Bind();
+	Shader skyboxShader("shaders/skybox.shader");
+	skyboxShader.SetUniform1i("skybox", 0);
+	
+	glEnable(GL_DEPTH_TEST);
+	ImGui::CreateContext();
+	ImGui_ImplGlfwGL3_Init(window, true);
+	ImGui::StyleColorsDark();
+	bool show_demo_window = true;
+	bool show_another_window = false;
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	glm::vec3 f(0.0f, 0.0f, 0.0f);
+	glm::vec3 y(0.0f, 0.0f, 0.0f);
 	// render loop
 	// -----------
 	while (!glfwWindowShouldClose(window))
 	{
+
 		// per-frame time logic
 		// --------------------
 		float currentFrame = glfwGetTime();
@@ -229,6 +291,9 @@ int main()
 		processInput(window);
 
 		renderer.Clear();
+
+		ImGui_ImplGlfwGL3_NewFrame();
+
 		lightShader.Bind();
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		lightShader.setMat4("projection", projection);
@@ -255,21 +320,47 @@ int main()
 		model = glm::scale(model, glm::vec3(0.2f));
 		lampShader.setMat4("model", model);
 		renderer.Draw(vaLight, lampShader, 36);
-		
 
-		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-		// -------------------------------------------------------------------------------
+		glDepthFunc(GL_LEQUAL);
+		skyboxShader.Bind();
+		skyboxShader.setMat4("projection", projection);
+		view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+		skyboxShader.setMat4("view", view);
+		renderer.Draw(skyboxVAO, skyboxShader, 36);
+		glDepthFunc(GL_LESS);
+
+		{
+			ImGui::SliderFloat3("light", &f.x, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
+			ImGui::SliderFloat3("myPos", &y.x, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
+			ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+				f.x += 0.0001f;
+			if (glfwGetKey(window, GLFW_KEY_L) == GLFW_PRESS)
+				f.x -= 0.0001f;
+			if (glfwGetKey(window, GLFW_KEY_O) == GLFW_PRESS)
+				f.y += 0.0001f;
+			if (glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS)
+				f.y -= 0.0001f;
+			if (glfwGetKey(window, GLFW_KEY_I) == GLFW_PRESS)
+				f.z += 0.0001f;
+			if (glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS)
+				f.z -= 0.0001f;
+			
+		}
+
+
+		ImGui::Render();
+		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+
+		
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
 
-	// optional: de-allocate all resources once they've outlived their purpose:
-	// ------------------------------------------------------------------------
-	va.Unbind();
-
-
-	// glfw: terminate, clearing all previously allocated GLFW resources.
-	// ------------------------------------------------------------------
+	ImGui_ImplGlfwGL3_Shutdown();
+	ImGui::DestroyContext();
+	
 	glfwTerminate();
 	return 0;
 }
@@ -280,7 +371,6 @@ void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 		camera.ProcessKeyboard(FORWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
