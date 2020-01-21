@@ -29,7 +29,7 @@ void processInput(GLFWwindow *window);
 unsigned int SCR_WIDTH;
 unsigned int SCR_HEIGHT;
 
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(35.0f, 0.0f, -35.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -586,9 +586,12 @@ int main()
  	floorShader.SetUniform3f("light.direction", lightDirection.x, lightDirection.y, lightDirection.z);
  	floorShader.SetUniform1i("material.diffuse", 0);
  	floorShader.SetUniform1f("material.shininess", 6.0f);
-	floorShader.SetUniform3f("light.ambient", 0.45f, 0.45f, 0.45f);
+	floorShader.SetUniform3f("light.ambient", 0.6, 0.6f, 0.6f);
 	floorShader.SetUniform3f("light.diffuse", 0.7f, 0.7f, 0.7f);
-	floorShader.SetUniform3f("light.specular", 0.13f, 0.13f, 0.11f);
+	floorShader.SetUniform3f("light.specular", 0.2f, 0.2f, 0.2f);
+	Texture normalMap("textures/NormalMap.png");
+	normalMap.Bind(3);
+	floorShader.SetUniform1i("normalMap", 3);
 	//element
 	VertexBuffer elementVB(cubeVertices, sizeof(cubeVertices));
 	VertexBufferLayout cubeLayout;
@@ -603,7 +606,7 @@ int main()
 	elementShader.SetUniform3f("material.diffuse", 0.780392f, 0.568627f, 0.113725f);
 	elementShader.SetUniform1f("material.shininess", 28.0f);
 	elementShader.SetUniform3f("light.direction", lightDirection.x, lightDirection.y, lightDirection.z);
-	elementShader.SetUniform3f("light.diffuse", 0.7f, 0.7f, 0.7f);
+	elementShader.SetUniform3f("light.diffuse", 0.9f, 0.9f, 0.9f);
 	elementShader.SetUniform3f("light.specular", 0.992157f, 0.941176f, 0.807843f);
 
 
@@ -655,7 +658,7 @@ int main()
 		elementShader.setMat4("projection", projection);
 		elementShader.setMat4("view", view);
 		elementShader.SetUniform3f("viewPos",camera.Position.x, camera.Position.y, camera.Position.z);
-		model = glm::translate(model, glm::vec3(15.0f, -1.0f, -10.0f));
+		model = glm::translate(model, glm::vec3(15.0f, -0.5f, -10.0f));
 		model = glm::scale(model, glm::vec3(1.0f, 8.0f, 1.0f));
 		elementShader.setMat4("model", model);
 		renderer.Draw(elementVA, elementShader, 36);

@@ -48,6 +48,7 @@ uniform Light light;
 
 void main()
 {
+  
     // ambient
     vec3 ambient = light.ambient * texture(material.diffuse, TexCoords).rgb;
   	
