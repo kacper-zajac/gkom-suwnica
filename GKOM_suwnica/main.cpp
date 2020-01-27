@@ -561,7 +561,7 @@ int main()
 	glm::vec3 lightDirection(-280.0f, 150.0f, -360.0f);
 
 
-	VertexArray skyboxVA, floorVA, elementVA;
+	VertexArray skyboxVA, floorVA, elementVA, railsVA;
 	// Skybox
 	VertexBuffer skyboxVB(skyboxVertices, sizeof(skyboxVertices));
 	VertexBufferLayout skyboxLayout;
@@ -589,9 +589,6 @@ int main()
 	floorShader.SetUniform3f("light.ambient", 0.6, 0.6f, 0.6f);
 	floorShader.SetUniform3f("light.diffuse", 0.7f, 0.7f, 0.7f);
 	floorShader.SetUniform3f("light.specular", 0.2f, 0.2f, 0.2f);
-	Texture normalMap("textures/NormalMap.png");
-	normalMap.Bind(3);
-	floorShader.SetUniform1i("normalMap", 3);
 	//element
 	VertexBuffer elementVB(cubeVertices, sizeof(cubeVertices));
 	VertexBufferLayout cubeLayout;
@@ -608,6 +605,17 @@ int main()
 	elementShader.SetUniform3f("light.direction", lightDirection.x, lightDirection.y, lightDirection.z);
 	elementShader.SetUniform3f("light.diffuse", 0.9f, 0.9f, 0.9f);
 	elementShader.SetUniform3f("light.specular", 0.992157f, 0.941176f, 0.807843f);
+	//rails
+	railsVA.AddBuffer(elementVB, cubeLayout);
+	Shader railsShader("shaders/lightMaterial.shader");
+	railsShader.Bind();
+	railsShader.SetUniform3f("objectColor", 0.0f, 0.02f, 0.0f);
+	railsShader.SetUniform3f("material.ambient", 0.329412f, 0.223529f, 0.027451f);
+	railsShader.SetUniform3f("material.diffuse", 0.780392f, 0.568627f, 0.113725f);
+	railsShader.SetUniform1f("material.shininess", 28.0f);
+	railsShader.SetUniform3f("light.direction", lightDirection.x, lightDirection.y, lightDirection.z);
+	railsShader.SetUniform3f("light.diffuse", 0.9f, 0.9f, 0.9f);
+	railsShader.SetUniform3f("light.specular", 0.992157f, 0.941176f, 0.807843f);
 
 
 
@@ -651,25 +659,144 @@ int main()
 			floorShader.setMat4("model", model);
 			renderer.Draw(floorVA, floorShader, 6);
 		}
-		// element?
+		// rails
+		model = glm::mat4(1.0f);
+		railsShader.Bind();
+		railsShader.setMat4("projection", projection);
+		railsShader.setMat4("view", view);
+		railsShader.SetUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+		model = glm::translate(model, glm::vec3(15.0f, -4.375f, -15.0f));
+		model = glm::scale(model, glm::vec3(0.25f, 0.25f, 20.0f));
+		railsShader.setMat4("model", model);
+		renderer.Draw(railsVA, railsShader, 36);
+		model = glm::translate(model, glm::vec3(48.0f, 0.0f, 0.0f));
+		railsShader.setMat4("model", model);
+ 		renderer.Draw(railsVA, railsShader, 36);
 
+
+		// element?
 		model = glm::mat4(1.0f);
 		elementShader.Bind();
 		elementShader.setMat4("projection", projection);
 		elementShader.setMat4("view", view);
 		elementShader.SetUniform3f("viewPos",camera.Position.x, camera.Position.y, camera.Position.z);
-		model = glm::translate(model, glm::vec3(15.0f, -0.5f, -10.0f));
-		model = glm::scale(model, glm::vec3(1.0f, 8.0f, 1.0f));
+
+		model = glm::translate(model, glm::vec3(15.0f, -3.75f, -10.0f));
+		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 8.0f));
 		elementShader.setMat4("model", model);
 		renderer.Draw(elementVA, elementShader, 36);
-		model = glm::translate(model, glm::vec3(12.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(24.0f, 0.0f, 0.0f));
 		elementShader.setMat4("model", model);
 		renderer.Draw(elementVA, elementShader, 36);
-		model = glm::scale(model, glm::vec3(1.0f, 0.125f, 1.0f));
-		model = glm::translate(model, glm::vec3(-6.0f, 4.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(11.5f, 1.0f, 1.0f));
+
+		model = glm::scale(model, glm::vec3(2.f, 2.f, 0.125f));
+		model = glm::translate(model, glm::vec3(0.35f, 4.0f, 2.0f));
+		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));		
+		model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 8.0f, 0.4f));
 		elementShader.setMat4("model", model);
 		renderer.Draw(elementVA, elementShader, 36);
+		model = glm::scale(model, glm::vec3(2.5f, 0.125f, 2.5f));
+		model = glm::rotate(model, glm::radians(-5.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(-1.37f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 8.0f, 0.4f));
+		elementShader.setMat4("model", model);
+		renderer.Draw(elementVA, elementShader, 36);
+
+		model = glm::scale(model, glm::vec3(2.5f, 0.125f, 2.5f));
+		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(1.37f, 0.0f, -4.0f));
+		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 8.0f, 0.4f));
+		elementShader.setMat4("model", model);
+		renderer.Draw(elementVA, elementShader, 36);
+		model = glm::scale(model, glm::vec3(2.5f, 0.125f, 2.5f));
+		model = glm::rotate(model, glm::radians(-5.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(-1.37f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 8.0f, 0.4f));
+		elementShader.setMat4("model", model);
+		renderer.Draw(elementVA, elementShader, 36);
+
+		model = glm::scale(model, glm::vec3(2.5f, 0.125f, 2.5f));
+		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(-11.3f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(-5.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 8.0f, 0.4f));
+		elementShader.setMat4("model", model);
+		renderer.Draw(elementVA, elementShader, 36);
+		model = glm::scale(model, glm::vec3(2.5f, 0.125f, 2.5f));
+		model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(1.37f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 8.0f, 0.4f));
+		elementShader.setMat4("model", model);
+		renderer.Draw(elementVA, elementShader, 36);
+
+		model = glm::scale(model, glm::vec3(2.5f, 0.125f, 2.5f));
+		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(-1.37f, 0.0f, 4.0f));
+		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(-5.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 8.0f, 0.4f));
+		elementShader.setMat4("model", model);
+		renderer.Draw(elementVA, elementShader, 36);
+		model = glm::scale(model, glm::vec3(2.5f, 0.125f, 2.5f));
+		model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(1.37f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::scale(model, glm::vec3(0.4f, 8.0f, 0.4f));
+		elementShader.setMat4("model", model);
+		renderer.Draw(elementVA, elementShader, 36);
+
+
+
+
+
+
+
+
+
+
+
+
+// 		model = glm::scale(model, glm::vec3(2.5f, 0.125f, 2.5f));
+// 		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+// 		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+// 		model = glm::translate(model, glm::vec3(-2.5f, 0.0f, -4.0f));
+// 		model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+// 		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+// 		model = glm::scale(model, glm::vec3(0.4f, 8.0f, 0.4f));
+// 		elementShader.setMat4("model", model);
+// 		renderer.Draw(elementVA, elementShader, 36);
+// 
+// 
+// 		model = glm::translate(model, glm::vec3(0.f, 0.0f, 10.0f));
+// 		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+
+
+// 		model = glm::translate(model, glm::vec3(12.0f, 0.0f, 0.0f));
+// 		elementShader.setMat4("model", model);
+// 		renderer.Draw(elementVA, elementShader, 36);
+// 		model = glm::scale(model, glm::vec3(1.0f, 0.125f, 1.0f));
+// 		model = glm::translate(model, glm::vec3(-6.0f, 4.0f, 0.0f));
+// 		model = glm::scale(model, glm::vec3(11.5f, 1.0f, 1.0f));
+// 		elementShader.setMat4("model", model);
+// 		renderer.Draw(elementVA, elementShader, 36);
 
 		// skybox
 		model = glm::mat4(1.0f);
