@@ -18,8 +18,21 @@
 #include "Skybox.h"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
-
 #include <iostream>
+
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+
+
+#define numberOfTriangles 360
+float moveFloat = 0.f;
+float moveFloat2 = 0.f;
+
+
+
+
+
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -29,6 +42,7 @@ void processInput(GLFWwindow *window);
 unsigned int SCR_WIDTH;
 unsigned int SCR_HEIGHT;
 
+GLfloat allCircleVertices[(numberOfTriangles) * 6 * 3 * 4];
 Camera camera(glm::vec3(35.0f, 0.0f, -35.0f));
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
@@ -37,8 +51,83 @@ bool firstMouse = true;
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
 
-int main()
+void drawCircle(GLfloat x, GLfloat y, GLfloat z, GLfloat radius, GLint numberOfSides)
 {
+	GLfloat twicePi = 2.0f * M_PI;
+
+	GLfloat circleVerticesX[3 * numberOfTriangles];
+	GLfloat circleVerticesY[3 * numberOfTriangles];
+	GLfloat circleVerticesZ[3 * numberOfTriangles];
+	GLfloat circleNormalX = 0.f;
+	GLfloat circleNormalY = 0.f;
+	GLfloat circleNormalZ = 2 * z;
+
+
+	for (int i = 0; i < numberOfTriangles; i++)
+	{
+		circleVerticesX[3 * i + 0] = x + (radius * cos(i * twicePi / (numberOfSides - 1)));
+		circleVerticesY[3 * i + 0] = y + (radius * sin(i * twicePi / (numberOfSides - 2)));
+		circleVerticesZ[3 * i + 0] = z;
+		circleVerticesX[3 * i + 1] = x + (radius * cos((i + 1) * twicePi / (numberOfSides - 3)));
+		circleVerticesY[3 * i + 1] = y + (radius * sin((i + 1) * twicePi / (numberOfSides - 4)));
+		circleVerticesZ[3 * i + 1] = z;
+		circleVerticesX[3 * i + 2] = x;
+		circleVerticesY[3 * i + 2] = y;
+		circleVerticesZ[3 * i + 2] = z;
+	}
+
+	// przednia sciana
+	for (int i = 0; i < 3 * numberOfTriangles; i++)
+	{
+		allCircleVertices[i * 6] = circleVerticesX[i];
+		allCircleVertices[(i * 6) + 1] = circleVerticesY[i];
+		allCircleVertices[(i * 6) + 2] = circleVerticesZ[i];
+		allCircleVertices[(i * 6) + 3] = circleNormalX;
+		allCircleVertices[(i * 6) + 4] = circleNormalY;
+		allCircleVertices[(i * 6) + 5] = circleNormalZ;
+
+	} // 6 * 3 * num
+
+	// tylna sciana
+	for (int i = 0 ; i < 3 * numberOfTriangles; i++)
+	{
+		allCircleVertices[(3 * 6 * numberOfTriangles) + i * 6] = circleVerticesX[i];
+		allCircleVertices[(3 * 6 * numberOfTriangles) + (i * 6) + 1] = circleVerticesY[i];
+		allCircleVertices[(3 * 6 * numberOfTriangles) + (i * 6) + 2] = -circleVerticesZ[i];
+		allCircleVertices[(3 * 6 * numberOfTriangles) + (i * 6) + 3] = circleNormalX;
+		allCircleVertices[(3 * 6 * numberOfTriangles) + (i * 6) + 4] = circleNormalY;
+		allCircleVertices[(3 * 6 * numberOfTriangles) + (i * 6) + 5] = -circleNormalZ;
+
+	} // 3 * 6 * num + 3 * 6 * num
+
+	// kopiujemy przednia i tylna sciane
+	for (int i = 0; i < 6 * numberOfTriangles; i++)
+	{
+		allCircleVertices[(i * 6) + 6 * 6 * numberOfTriangles] = allCircleVertices[(i * 6)];
+		allCircleVertices[1 + (i * 6) + 6 * 6 * numberOfTriangles] = allCircleVertices[(i * 6) + 1];
+		allCircleVertices[2 + (i * 6) + 6 * 6 * numberOfTriangles] = allCircleVertices[(i * 6) + 2];
+		allCircleVertices[3 + (i * 6) + 6 * 6 * numberOfTriangles] = 0.f;
+		allCircleVertices[4 + (i * 6) + 6 * 6 * numberOfTriangles] = 0.f;
+		allCircleVertices[5 + (i * 6) + 6 * 6 * numberOfTriangles] = 0.f;
+	}// git
+
+
+	for (int i = 0; i < numberOfTriangles; i ++)
+	{
+		allCircleVertices[(i * 6 * 3) + 12 + numberOfTriangles * 6 * 6] = allCircleVertices[(i * 6 * 3) + numberOfTriangles * 6 * 6];
+		allCircleVertices[1 + (i * 6 * 3) + 12 + numberOfTriangles * 6 * 6] = allCircleVertices[1 + (i * 6 * 3) + numberOfTriangles * 6 * 6];
+		allCircleVertices[2 + (i * 6 * 3) + 12 + numberOfTriangles * 6 * 6] = - allCircleVertices[2 + (i * 6 * 3) + numberOfTriangles * 6 * 6];
+	}
+	for (int i = 0; i < numberOfTriangles; i++)
+	{
+		allCircleVertices[(i * 6 * 3) + 12 + numberOfTriangles * 6 * 3 * 3] = allCircleVertices[(i * 6 * 3) + 6 + numberOfTriangles * 6 * 3 * 3];
+		allCircleVertices[1 + (i * 6 * 3) + 12 + numberOfTriangles * 6 * 3 * 3] = allCircleVertices[1 + (i * 6 * 3) + 6 + numberOfTriangles * 6 * 3 * 3];
+		allCircleVertices[2 + (i * 6 * 3) + 12 + numberOfTriangles * 6 * 3 * 3] = -allCircleVertices[2 + (i * 6 * 3) + 6 + numberOfTriangles * 6 * 3 * 3];
+	}
+
+}
+int main()
+{	
 	glm::vec3 movement[] = {
 		  glm::vec3(0.0f, -5.0f, -0.0f),
 		  glm::vec3(1.0f, -5.0f, -0.0f),
@@ -442,6 +531,8 @@ int main()
 					  glm::vec3(19.0f, -5.0f, -19.0f)
 	};
 
+	
+
 	float cubeVertices[] = {
 		// positions          // normals           // texture coords
 		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
@@ -536,6 +627,11 @@ int main()
 		 1.0f, -1.0f,  1.0f
 	};
 
+
+
+	
+	drawCircle(0.f, 0.f, 0.125f, 0.25f, numberOfTriangles);
+
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -561,7 +657,7 @@ int main()
 	glm::vec3 lightDirection(-280.0f, 150.0f, -360.0f);
 
 
-	VertexArray skyboxVA, floorVA, elementVA, railsVA;
+	VertexArray skyboxVA, floorVA, elementVA, railsVA, circleVA;
 	// Skybox
 	VertexBuffer skyboxVB(skyboxVertices, sizeof(skyboxVertices));
 	VertexBufferLayout skyboxLayout;
@@ -581,7 +677,6 @@ int main()
  	floorVA.AddBuffer(floorVB, floorLayout); 
  	Shader floorShader("shaders/floorTexture.shader");
  	Texture floorTexture("textures/concrete2.jpeg");
- 	floorTexture.Bind();
  	floorShader.Bind();
  	floorShader.SetUniform3f("light.direction", lightDirection.x, lightDirection.y, lightDirection.z);
  	floorShader.SetUniform1i("material.diffuse", 0);
@@ -616,7 +711,47 @@ int main()
 	railsShader.SetUniform3f("light.direction", lightDirection.x, lightDirection.y, lightDirection.z);
 	railsShader.SetUniform3f("light.diffuse", 0.9f, 0.9f, 0.9f);
 	railsShader.SetUniform3f("light.specular", 0.992157f, 0.941176f, 0.807843f);
+	// metal
+	Shader metalShader("shaders/lightMaterial.shader");
+	metalShader.Bind();
+	metalShader.SetUniform3f("objectColor", 0.9f, 0.9f, 0.98f);
+	metalShader.SetUniform3f("material.ambient", 0.10f, 0.10f, 0.10f);
+	metalShader.SetUniform3f("material.diffuse", 0.8f, 0.8f, 0.8f);
+	metalShader.SetUniform1f("material.shininess", 75.0f);
+	metalShader.SetUniform3f("light.direction", lightDirection.x, lightDirection.y, lightDirection.z);
+	metalShader.SetUniform3f("light.diffuse", 1.f, 1.f, 1.f);
+	metalShader.SetUniform3f("light.specular", 1.f, 1.f, 1.f);
+	// circle
+	VertexBuffer circleVB(allCircleVertices, sizeof(allCircleVertices));
+	VertexBufferLayout circleLayout;
+	circleLayout.Push<float>(3);
+	circleLayout.Push<float>(3);
+	circleVA.AddBuffer(circleVB, circleLayout);
+	Shader circleShader("shaders/light.shader");
+	circleShader.Bind();
+	circleShader.SetUniform3f("objectColor", 0.6f, 0.6f, 0.6f);
+	circleShader.SetUniform3f("material.ambient", 0.10f, 0.10f, 0.10f);
+	circleShader.SetUniform3f("material.diffuse", 0.8f, 0.8f, 0.8f);
+	circleShader.SetUniform1f("material.shininess", 75.0f);
+	circleShader.SetUniform3f("light.direction", lightDirection.x, lightDirection.y, lightDirection.z);
+	circleShader.SetUniform3f("light.diffuse", 1.f, 1.f, 1.f);
+	circleShader.SetUniform3f("light.specular", 1.f, 1.f, 1.f);
+	//barrel
+	Shader barrelShader("shaders/texture.shader");
+	barrelShader.Bind();
+	barrelShader.SetUniform1i("material.diffuse", 6);
+	barrelShader.SetUniform1i("material.specular", 1);
+	barrelShader.SetUniform1f("material.shininess", 16.0f);
+	barrelShader.SetUniform3f("light.ambient", 0.15f, 0.15f, 0.15f);
+	barrelShader.SetUniform3f("light.direction", lightDirection.x, lightDirection.y, lightDirection.z);
+	barrelShader.SetUniform3f("light.diffuse", .75f, .75f, .75f);
+	barrelShader.SetUniform3f("light.specular", 1.f, 1.f, 1.f);
 
+	Texture barrelTexture("textures/barrel.png");
+	Texture barrelTextureMap("textures/map.png");
+	floorTexture.Bind(0);
+	barrelTextureMap.Bind(1);
+	barrelTexture.Bind(6);
 
 
 	// ImGui
@@ -630,6 +765,7 @@ int main()
 	Renderer renderer;	
 	glEnable(GL_DEPTH_TEST);
 
+	float moving = 0.f;
 	while (!glfwWindowShouldClose(window))
 	{
 		float currentFrame = glfwGetTime();
@@ -644,6 +780,8 @@ int main()
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 model = glm::mat4(1.0f);
 
+
+		moving += moveFloat;
 		// floor
 		model = glm::mat4(1.0f);
 		floorShader.Bind();
@@ -674,14 +812,15 @@ int main()
  		renderer.Draw(railsVA, railsShader, 36);
 
 
-		// element?
+		// element
 		model = glm::mat4(1.0f);
 		elementShader.Bind();
 		elementShader.setMat4("projection", projection);
 		elementShader.setMat4("view", view);
 		elementShader.SetUniform3f("viewPos",camera.Position.x, camera.Position.y, camera.Position.z);
 
-		model = glm::translate(model, glm::vec3(15.0f, -3.75f, -10.0f));
+		// podstawa
+		model = glm::translate(model, glm::vec3(15.0f, -3.75f, -10.0f - moving));
 		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 8.0f));
 		elementShader.setMat4("model", model);
 		renderer.Draw(elementVA, elementShader, 36);
@@ -689,6 +828,7 @@ int main()
 		elementShader.setMat4("model", model);
 		renderer.Draw(elementVA, elementShader, 36);
 
+		// krzywe
 		model = glm::scale(model, glm::vec3(2.f, 2.f, 0.125f));
 		model = glm::translate(model, glm::vec3(0.35f, 4.0f, 2.0f));
 		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));		
@@ -762,41 +902,69 @@ int main()
 		model = glm::scale(model, glm::vec3(0.4f, 8.0f, 0.4f));
 		elementShader.setMat4("model", model);
 		renderer.Draw(elementVA, elementShader, 36);
+		
+		//dach
+		model = glm::scale(model, glm::vec3(2.5f, 0.125f, 2.5f));
+		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(0.0f, 0.0f, -1.0f));
+		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(5.f, 3.75f, -2.0f));
+		model = glm::scale(model, glm::vec3(15.f, 0.5f, 4.f));
+		elementShader.setMat4("model", model);
+		renderer.Draw(elementVA, elementShader, 36);
+
+		//metal
+		metalShader.Bind();
+		metalShader.SetUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+		metalShader.setMat4("projection", projection);
+		metalShader.setMat4("view", view);
+		model = glm::scale(model, glm::vec3(0.8f, 0.5f, 0.0625f));
+		model = glm::translate(model, glm::vec3(0.f, -0.75f, 0.0f));
+		metalShader.setMat4("model", model);
+		renderer.Draw(elementVA, metalShader, 36);
+
+		railsShader.Bind();
+		model = glm::translate(model, glm::vec3(0.f, -0.05f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.9f, 1.f, 0.25f)); // 0.25/4 x 5 x 0.25/4
+		railsShader.setMat4("model", model);
+		renderer.Draw(elementVA, railsShader, 36);
 
 
+		model = glm::scale(model, glm::vec3(0.09259259259f, 1.f, 1.f));
+		metalShader.Bind();
+		model = glm::translate(model, glm::vec3(0.f + moveFloat2, -9.95f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.015625f, 20.f, 0.25f)); // /64 x 5 x /64
+		metalShader.setMat4("model", model);
+		renderer.Draw(elementVA, metalShader, 36);
+		
+		model = glm::scale(model, glm::vec3(64.f, 0.2f, 64.f));
+		model = glm::translate(model, glm::vec3(0.f, -3.f, 0.f));
+		barrelShader.Bind();
+		barrelShader.SetUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+		barrelShader.setMat4("projection", projection);
+		barrelShader.setMat4("view", view);
+		barrelShader.setMat4("model", model);
+		renderer.Draw(elementVA, barrelShader, 36);
 
 
-
-
-
-
-
-
-
-
-// 		model = glm::scale(model, glm::vec3(2.5f, 0.125f, 2.5f));
-// 		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-// 		model = glm::rotate(model, glm::radians(-15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
-// 		model = glm::translate(model, glm::vec3(-2.5f, 0.0f, -4.0f));
-// 		model = glm::rotate(model, glm::radians(5.0f), glm::vec3(0.0f, 0.0f, -1.0f));
-// 		model = glm::rotate(model, glm::radians(15.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
-// 		model = glm::scale(model, glm::vec3(0.4f, 8.0f, 0.4f));
-// 		elementShader.setMat4("model", model);
-// 		renderer.Draw(elementVA, elementShader, 36);
-// 
-// 
-// 		model = glm::translate(model, glm::vec3(0.f, 0.0f, 10.0f));
-// 		model = glm::rotate(model, glm::radians(180.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
-
-
-// 		model = glm::translate(model, glm::vec3(12.0f, 0.0f, 0.0f));
-// 		elementShader.setMat4("model", model);
-// 		renderer.Draw(elementVA, elementShader, 36);
-// 		model = glm::scale(model, glm::vec3(1.0f, 0.125f, 1.0f));
-// 		model = glm::translate(model, glm::vec3(-6.0f, 4.0f, 0.0f));
-// 		model = glm::scale(model, glm::vec3(11.5f, 1.0f, 1.0f));
-// 		elementShader.setMat4("model", model);
-// 		renderer.Draw(elementVA, elementShader, 36);
+		//circle
+		model = glm::mat4(1.0f);
+		circleShader.Bind();
+		circleShader.SetUniform3f("viewPos", camera.Position.x, camera.Position.y, camera.Position.z);
+		circleShader.setMat4("projection", projection);
+		circleShader.setMat4("view", view);
+		model = glm::rotate(model, glm::radians(90.f), glm::vec3(0.0f, 1.f, 0.f));
+		model = glm::translate(model, glm::vec3(7.5f + moving, -4.f, 15.0f));
+		circleShader.setMat4("model", model);
+		renderer.Draw(circleVA, circleShader, numberOfTriangles * 4 * 3);
+		model = glm::translate(model, glm::vec3(5.0f, 0.f, 0.f));
+		circleShader.setMat4("model", model);
+		renderer.Draw(circleVA, circleShader, numberOfTriangles * 4 * 3);
+		model = glm::translate(model, glm::vec3(.0f, 0.0f, 12.0f));
+		circleShader.setMat4("model", model);
+		renderer.Draw(circleVA, circleShader, numberOfTriangles * 4 * 3);
+		model = glm::translate(model, glm::vec3(-5.0f, 0.f, 0.f));
+		circleShader.setMat4("model", model);
+		renderer.Draw(circleVA, circleShader, numberOfTriangles * 4 * 3);
 
 		// skybox
 		model = glm::mat4(1.0f);
@@ -807,6 +975,7 @@ int main()
 		skyboxShader.setMat4("view", view);
 		renderer.Draw(skyboxVA, skyboxShader, 36);
 		glDepthFunc(GL_LESS);
+
 		/*{
 			//ImGui::SliderFloat3("light", &f.x, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
 			//ImGui::SliderFloat3("myPos", &y.x, -1.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f    
@@ -849,6 +1018,16 @@ int main()
 // ---------------------------------------------------------------------------------------------------------
 void processInput(GLFWwindow *window)
 {
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+		moveFloat += 0.0001f;
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+		moveFloat -= 0.0001f;
+	if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+		if (moveFloat2 > - 5.f)
+			moveFloat2 -= 0.002f;
+	if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+		if (moveFloat2 < 5.f)
+			moveFloat2 += 0.002f;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
@@ -897,4 +1076,3 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	camera.ProcessMouseScroll(yoffset);
 }
-
