@@ -8,7 +8,7 @@
 <p><img src="https://i.imgur.com/1AnBbmJ.jpg" alt="" width="870" height="485" /></p>
 <p><img src="https://i.imgur.com/unnWRDf.jpg" alt="" width="870" height="485" /></p>
 
-<h2>Sterowanie modelem:</h2>
+<h2>Sterowanie:</h2>
 <ul>
 <li>Strzałki góra, dół - sterowanie suwnicy przód, tył</li>
 <li>Strzałki prawo, lewo - sterowanie sześcianem prawo, lewo</li>
