@@ -1,6 +1,5 @@
 <h1>Projekt - Suwnica</h1>
 
-<h2>&nbsp;</h2>
 <h2>Szkic projektu:</h2>
 <p><img src="https://i.imgur.com/7RLz6Nc.jpg" alt="" width="870" height="485" /></p>
 <h2>&nbsp;</h2>
